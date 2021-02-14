@@ -18,6 +18,8 @@ class DrawScanner():
     ODDS_XPATH = '/html/body/div[1]/main/div/div[2]/div[3]/div[1]/div[2]/div[2]/div/div/div[2]'
     COUNTRY_XPATH = '/html/body/div[1]/main/div/div[1]/ul/li[2]'
     LEAGUE_XPATH = '/html/body/div[1]/main/div/div[1]/ul/li[3]'
+    STANDING_XPATH = '/html/body/div[1]/main/div/div[2]/div[3]/div[2]/div/div[3]/div[1]/div[1]/div/div[2]/div/div/div'
+    STANDING_XPATH_2 = '/html/body/div[1]/main/div/div[2]/div[3]/div[2]/div/div[3]/div[1]/div[1]/div/div[2]/div/div/div'
 
     games_to_scan = []
     with open('today_games', 'r') as text_file:
@@ -30,8 +32,46 @@ class DrawScanner():
         for game in self.games_to_scan:
             driver.get(game)
 
-            self.get_teams_league_odds(driver)
+            country, league, home_team, away_team, home_odd, draw_odd, away_odd = self.get_teams_league_odds(driver)
 
+            self.get_standings(driver, home_team, away_team)
+
+    def get_standings(self, driver, home_team, away_team):
+
+        home_standing = ''
+        away_standing = ''
+        try:
+            WebDriverWait(driver, timeout=10).until(EC.visibility_of_element_located((By.XPATH, self.STANDING_XPATH)))
+            standing_tokens = driver.find_elements_by_xpath(self.STANDING_XPATH)
+
+            for position in range(2, len(standing_tokens) + 1):
+                team_tokens = driver.find_element_by_xpath(self.STANDING_XPATH + f'[{position}]')
+
+                if 'fdibCW' in team_tokens.get_attribute('class'):
+                    home_standing = team_tokens.text.split('\n')
+                if 'vqXLK' in team_tokens.get_attribute('class'):
+                    away_standing = team_tokens.text.split('\n')
+
+        except Exception as ex:
+            try:
+                WebDriverWait(driver, timeout=10).until(
+                    EC.visibility_of_element_located((By.XPATH, self.STANDING_XPATH_2)))
+                standing_tokens = driver.find_elements_by_xpath(self.STANDING_XPATH_2)
+
+                for position in range(2, len(standing_tokens) + 1):
+                    team_tokens = driver.find_element_by_xpath(self.STANDING_XPATH_2 + f'[{position}]')
+
+                    if 'fdibCW' in team_tokens.get_attribute('class'):
+                        home_standing = team_tokens.text.split('\n')
+                    if 'vqXLK' in team_tokens.get_attribute('class'):
+                        away_standing = team_tokens.text.split('\n')
+
+
+            except Exception:
+                print('VLIZA VTORI EXCEPTION')
+
+        print(home_standing)
+        print(away_standing)
 
     def get_teams_league_odds(self, driver):
         try:
@@ -46,8 +86,11 @@ class DrawScanner():
         home_team, away_team = teams_token.split(' - ')
         country = driver.find_element_by_xpath(self.COUNTRY_XPATH).text
         league = driver.find_element_by_xpath(self.LEAGUE_XPATH).text
+        if 'video stream' in league:
+            league = ''
 
-        print(f'{country} {league}\n{home_team} vs {away_team} {home_odd} {draw_odd} {away_odd}')
+        # print(f'{country} {league}\n{home_team} vs {away_team} {home_odd} {draw_odd} {away_odd}')
+        return country, league, home_team, away_team, home_odd, draw_odd, away_odd
 
     def driver_chrome(self):
         """
