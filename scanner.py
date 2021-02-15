@@ -20,6 +20,7 @@ class DrawScanner():
     LEAGUE_XPATH = '/html/body/div[1]/main/div/div[1]/ul/li[3]'
     STANDING_XPATH = '/html/body/div[1]/main/div/div[2]/div[3]/div[2]/div/div[3]/div[1]/div[1]/div/div[2]/div/div/div'
     STANDING_XPATH_2 = '/html/body/div[1]/main/div/div[2]/div[3]/div[2]/div/div[3]/div[1]/div[1]/div/div[2]/div/div/div'
+    STANDING_XPATH_ERROR = '/html/body/div[1]/main/div/div[2]/div[3]/div[2]/div/div[2]/div[1]/div[1]/div/div[2]/div/div'
 
     games_to_scan = []
     with open('today_games', 'r') as text_file:
